@@ -1,8 +1,13 @@
 import { Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
+import { Platform, Text } from "react-native";
 
 const tabIcons = {
-  dashboard: { ios: "square.grid.2x2.fill", android: "grid", web: "grid" },
+  dashboard: {
+    ios: "square.grid.2x2.fill",
+    android: "grid_view",
+    web: "grid_view",
+  },
   subscriptions: {
     ios: "rectangle.stack.fill",
     android: "subscriptions",
@@ -15,8 +20,8 @@ const tabIcons = {
   },
   recommendations: {
     ios: "sparkles",
-    android: "auto-awesome",
-    web: "sparkles",
+    android: "auto_awesome",
+    web: "auto_awesome",
   },
 } as const;
 
@@ -25,7 +30,24 @@ function renderTabIcon(
   color: string,
   size: number,
 ) {
-  return <SymbolView name={tabIcons[name]} tintColor={color} size={size} />;
+  const fallback = name === "dashboard" ? "▦" : "✦";
+
+  if (Platform.OS === "web") {
+    return (
+      <Text style={{ color, fontSize: size, lineHeight: size }}>{fallback}</Text>
+    );
+  }
+
+  return (
+    <SymbolView
+      name={tabIcons[name]}
+      tintColor={color}
+      size={size}
+      fallback={
+        <Text style={{ color, fontSize: size, lineHeight: size }}>{fallback}</Text>
+      }
+    />
+  );
 }
 
 export default function TabsLayout() {
@@ -41,13 +63,15 @@ export default function TabsLayout() {
           paddingTop: 8,
           paddingBottom: 12,
           backgroundColor: "#FFFFFF",
-          borderTopColor: "#DDE1E8",
-          borderTopWidth: 1,
+          borderTopColor: "#000000",
+          borderTopWidth: 10,
+          
         },
         tabBarItemStyle: {
           marginHorizontal: 5,
           marginVertical: 5,
           borderRadius: 18,
+          
         },
         tabBarLabelStyle: {
           fontSize: 13,
@@ -58,7 +82,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
+          title: "Dashboards",
           tabBarIcon: ({ color, size }) =>
             renderTabIcon("dashboard", color, size),
         }}
