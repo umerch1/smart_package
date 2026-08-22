@@ -98,7 +98,7 @@ export default function DashboardScreen() {
   );
 }
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#F8FAFC" },
+  page: { flex: 1, backgroundColor: "#F7FAFE" },
   safe: { flex: 1 },
   content: {
     padding: 22,
@@ -115,21 +115,21 @@ const styles = StyleSheet.create({
   },
   headerActions: { flexDirection: "row", gap: 8 },
   eyebrow: { fontSize: 11, letterSpacing: 1, fontWeight: "700" },
-  title: { fontSize: 28, fontWeight: "800", color: "#173B35", marginTop: 5 },
+  title: { fontSize: 28, fontWeight: "800", color: "#102F55", marginTop: 5 },
   summary: {
-    backgroundColor: "#E6F2EE",
+    backgroundColor: "#DDF5EE",
     padding: 22,
     borderRadius: 20,
     gap: 5,
   },
-  count: { fontSize: 42, fontWeight: "800", color: "#236B5D" },
+  count: { fontSize: 42, fontWeight: "800", color: "#102F55" },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  sectionTitle: { fontSize: 19, fontWeight: "800", color: "#173B35" },
-  link: { color: "#236B5D", fontWeight: "700" },
+  sectionTitle: { fontSize: 19, fontWeight: "800", color: "#102F55" },
+  link: { color: "#10A889", fontWeight: "700" },
   cards: { gap: 12 },
   renewal: {
     backgroundColor: "#FFF9EC",

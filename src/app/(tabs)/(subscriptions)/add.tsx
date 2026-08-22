@@ -69,7 +69,7 @@ export default function AddSubscriptionScreen() {
   );
 }
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#F8FAFC" },
+  page: { flex: 1, backgroundColor: "#F7FAFE" },
   safe: { flex: 1 },
   content: {
     padding: 22,
@@ -79,6 +79,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
-  title: { fontSize: 28, fontWeight: "800", color: "#173B35" },
+  title: { fontSize: 28, fontWeight: "800", color: "#102F55" },
   intro: { lineHeight: 22, marginBottom: 4 },
 });

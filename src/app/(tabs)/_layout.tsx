@@ -1,6 +1,8 @@
 import { Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { Platform, Text } from "react-native";
+import { Platform, Text, type ColorValue } from "react-native";
+
+import { Colors } from "@/constants/theme";
 
 const tabIcons = {
   dashboard: {
@@ -27,7 +29,7 @@ const tabIcons = {
 
 function renderTabIcon(
   name: keyof typeof tabIcons,
-  color: string,
+  color: ColorValue,
   size: number,
 ) {
   const fallback = name === "dashboard" ? "▦" : "✦";
@@ -55,22 +57,22 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#052653",
-        tabBarInactiveTintColor: "#454B57",
-        tabBarActiveBackgroundColor: "#6497F6",
+        tabBarActiveTintColor: Colors.light.brandTeal,
+        tabBarInactiveTintColor: Colors.light.textSecondary,
+        tabBarActiveBackgroundColor: Colors.light.backgroundSelected,
         tabBarStyle: {
           height: 96,
           paddingTop: 8,
           paddingBottom: 12,
           backgroundColor: "#FFFFFF",
-          borderTopColor: "#000000",
-          borderTopWidth: 10,
+          borderTopColor: Colors.light.border,
+          borderTopWidth: 1,
           
         },
         tabBarItemStyle: {
           marginHorizontal: 5,
           marginVertical: 5,
-          borderRadius: 18,
+          borderRadius: 14,
           
         },
         tabBarLabelStyle: {

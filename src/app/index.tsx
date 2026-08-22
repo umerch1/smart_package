@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Loading } from "@/components/Loading";
@@ -21,9 +21,11 @@ export default function SplashScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.logo}>
-          <ThemedText style={styles.logoText}>S</ThemedText>
-        </View>
+        <Image
+          accessibilityLabel="SmartSub logo"
+          source={require("../../assets/images/icon6.png")}
+          style={styles.logo}
+        />
         <ThemedText style={styles.brand}>SmartSub</ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.tagline}>
           Keep every subscription in sight.
@@ -46,15 +48,11 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   logo: {
-    width: 76,
-    height: 76,
-    borderRadius: 24,
-    backgroundColor: "#236B5D",
-    alignItems: "center",
-    justifyContent: "center",
+    width: 132,
+    height: 132,
+    borderRadius: 66,
     marginBottom: 20,
   },
-  logoText: { color: "#FFFFFF", fontSize: 42, fontWeight: "800" },
-  brand: { fontSize: 38, fontWeight: "800", color: "#173B35" },
+  brand: { fontSize: 38, fontWeight: "800", color: "#102F55" },
   tagline: { fontSize: 16, marginTop: 8, marginBottom: 48 },
 });

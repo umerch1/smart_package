@@ -5,7 +5,7 @@ import { ThemedText } from "./themed-text";
 export function Loading({ label = "Loading" }: { label?: string }) {
   return (
     <View style={styles.container}>
-      <ActivityIndicator color="#236B5D" size="small" />
+      <ActivityIndicator color="#10A889" size="small" />
       <ThemedText themeColor="textSecondary" style={styles.label}>
         {label}
       </ThemedText>

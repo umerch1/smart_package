@@ -1,6 +1,7 @@
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -31,9 +32,11 @@ export default function RegisterScreen() {
             contentContainerStyle={styles.content}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.logo}>
-              <ThemedText style={styles.logoText}>S</ThemedText>
-            </View>
+            <Image
+              accessibilityLabel="SmartSub logo"
+              source={require("../../../assets/images/icon6.png")}
+              style={styles.logo}
+            />
             <ThemedText style={styles.title}>Create your account</ThemedText>
             <ThemedText themeColor="textSecondary" style={styles.subtitle}>
               A clearer way to manage what you subscribe to.
@@ -86,7 +89,7 @@ export default function RegisterScreen() {
   );
 }
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#F8FAFC" },
+  page: { flex: 1, backgroundColor: "#F7FAFE" },
   safe: { flex: 1 },
   flex: { flex: 1 },
   content: {
@@ -98,18 +101,14 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   logo: {
-    width: 48,
-    height: 48,
-    borderRadius: 15,
-    backgroundColor: "#236B5D",
-    alignItems: "center",
-    justifyContent: "center",
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     marginBottom: 28,
   },
-  logoText: { color: "#FFF", fontSize: 27, fontWeight: "800" },
-  title: { fontSize: 32, fontWeight: "800", color: "#173B35" },
+  title: { fontSize: 32, fontWeight: "800", color: "#102F55" },
   subtitle: { marginTop: 8, marginBottom: 28, fontSize: 16 },
   form: { gap: 16 },
   footer: { flexDirection: "row", justifyContent: "center", marginTop: 24 },
-  link: { color: "#236B5D", fontWeight: "700" },
+  link: { color: "#10A889", fontWeight: "700" },
 });

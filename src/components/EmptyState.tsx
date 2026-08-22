@@ -20,6 +20,6 @@ export function EmptyState({
 }
 const styles = StyleSheet.create({
   container: { alignItems: "center", padding: 28, gap: 8 },
-  title: { fontSize: 18, fontWeight: "800", color: "#173B35" },
+  title: { fontSize: 18, fontWeight: "800", color: "#102F55" },
   message: { textAlign: "center", lineHeight: 21 },
 });

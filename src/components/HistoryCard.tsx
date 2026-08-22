@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
     borderWidth: 1,
-    borderColor: "#E5ECE9",
+    borderColor: "#D7E5F0",
   },
   icon: {
     width: 44,
@@ -72,11 +72,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  subscriptionIcon: { backgroundColor: "#E6F2EE" },
+  subscriptionIcon: { backgroundColor: "#DDF5EE" },
   paymentIcon: { backgroundColor: "#FFF9EC" },
-  iconText: { color: "#236B5D", fontSize: 18, fontWeight: "800" },
+  iconText: { color: "#10A889", fontSize: 18, fontWeight: "800" },
   details: { flex: 1, gap: 4 },
-  name: { color: "#173B35", fontSize: 16, fontWeight: "800" },
+  name: { color: "#102F55", fontSize: 16, fontWeight: "800" },
   detail: { fontSize: 13, lineHeight: 19 },
   status: {
     borderRadius: 8,
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 4,
   },
-  success: { color: "#236B5D", backgroundColor: "#E6F2EE" },
+  success: { color: "#159A68", backgroundColor: "#DDF5EE" },
   failed: { color: "#A64B4B", backgroundColor: "#FBEAEA" },
   muted: { color: "#6B7773", backgroundColor: "#EEF1F0" },
 });

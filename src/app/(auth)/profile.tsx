@@ -35,7 +35,7 @@ export default function ProfileScreen() {
   );
 }
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#F8FAFC" },
+  page: { flex: 1, backgroundColor: "#F7FAFE" },
   safe: { flex: 1 },
   content: {
     padding: 28,
@@ -47,6 +47,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   eyebrow: { fontSize: 11, letterSpacing: 1, fontWeight: "700" },
-  title: { fontSize: 32, fontWeight: "800", color: "#173B35" },
+  title: { fontSize: 32, fontWeight: "800", color: "#102F55" },
   subtitle: { marginBottom: 14 },
 });

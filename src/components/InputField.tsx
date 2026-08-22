@@ -11,7 +11,7 @@ export function InputField({
       <ThemedText style={styles.label}>{label}</ThemedText>
       <TextInput
         {...props}
-        placeholderTextColor="#8A9B96"
+        placeholderTextColor="#5C7187"
         style={styles.input}
       />
     </View>
@@ -19,14 +19,14 @@ export function InputField({
 }
 const styles = StyleSheet.create({
   container: { gap: 8 },
-  label: { fontSize: 14, fontWeight: "700", color: "#173B35" },
+  label: { fontSize: 14, fontWeight: "700", color: "#102F55" },
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: "#D5E0DC",
+    borderColor: "#D7E5F0",
     borderRadius: 12,
     paddingHorizontal: 15,
-    color: "#173B35",
+    color: "#102F55",
     backgroundColor: "#FFFFFF",
     fontSize: 16,
   },

@@ -108,7 +108,7 @@ export function SubscriptionCard({
   plan,
   price,
   renewal,
-  accent = "#236B5D",
+  accent = "#10A889",
 }: SubscriptionCardProps) {
   const isDetailed = category !== undefined;
   return (
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
     borderWidth: 1,
-    borderColor: "#E5ECE9",
+    borderColor: "#D7E5F0",
   },
   icon: {
     width: 44,
@@ -191,15 +191,15 @@ const styles = StyleSheet.create({
   },
   iconText: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
   details: { flex: 1, gap: 3 },
-  name: { fontSize: 16, fontWeight: "800", color: "#173B35" },
+  name: { fontSize: 16, fontWeight: "800", color: "#102F55" },
   plan: { fontSize: 13 },
   detail: { fontSize: 12, color: "#526863" },
   meta: { alignItems: "flex-end", gap: 7 },
-  price: { fontSize: 13, fontWeight: "700", color: "#173B35" },
-  renewal: { fontSize: 12, color: "#236B5D", fontWeight: "700" },
+  price: { fontSize: 13, fontWeight: "700", color: "#102F55" },
+  renewal: { fontSize: 12, color: "#10A889", fontWeight: "700" },
   status: {
-    color: "#236B5D",
-    backgroundColor: "#E6F2EE",
+    color: "#159A68",
+    backgroundColor: "#DDF5EE",
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 8,
@@ -209,6 +209,6 @@ const styles = StyleSheet.create({
   expired: { color: "#A64B4B", backgroundColor: "#FBEAEA" },
   upcoming: { color: "#946D22", backgroundColor: "#FFF3D6" },
   actions: { flexDirection: "row", gap: 10 },
-  action: { color: "#236B5D", fontSize: 12, fontWeight: "800" },
+  action: { color: "#10A889", fontSize: 12, fontWeight: "800" },
   delete: { color: "#B54D4D" },
 });

@@ -58,7 +58,7 @@ export default function RecommendationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#F8FAFC" },
+  page: { flex: 1, backgroundColor: "#F7FAFE" },
   safe: { flex: 1 },
   content: {
     padding: 22,
@@ -74,16 +74,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   eyebrow: { fontSize: 11, letterSpacing: 1, fontWeight: "700" },
-  title: { fontSize: 28, fontWeight: "800", color: "#173B35", marginTop: 5 },
+  title: { fontSize: 28, fontWeight: "800", color: "#102F55", marginTop: 5 },
   intro: { lineHeight: 22 },
   cards: { gap: 12 },
   empty: {
     backgroundColor: "#FFFFFF",
     borderRadius: 17,
     borderWidth: 1,
-    borderColor: "#E5ECE9",
+    borderColor: "#D7E5F0",
     padding: 24,
     gap: 5,
   },
-  emptyTitle: { fontSize: 17, fontWeight: "800", color: "#173B35" },
+  emptyTitle: { fontSize: 17, fontWeight: "800", color: "#102F55" },
 });

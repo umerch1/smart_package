@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
   copy: { flex: 1, gap: 4 },
   title: { color: "#493600", fontSize: 15, fontWeight: "800" },
   message: { color: "#6A5520", fontSize: 13, lineHeight: 19 },
-  action: { color: "#236B5D", fontSize: 13, fontWeight: "800", marginTop: 3 },
+  action: { color: "#10A889", fontSize: 13, fontWeight: "800", marginTop: 3 },
   dismiss: { color: "#806C38", fontSize: 24, lineHeight: 22 },
 });
