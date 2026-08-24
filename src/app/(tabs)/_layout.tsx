@@ -115,6 +115,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen name="(subscriptions)/add" options={{ href: null }} />
       <Tabs.Screen name="(subscriptions)/edit" options={{ href: null }} />
+      <Tabs.Screen name="(subscriptions)/details" options={{ href: null }} />
       <Tabs.Screen name="(history)/payments" options={{ href: null }} />
       <Tabs.Screen name="(history)/subscriptions" options={{ href: null }} />
     </Tabs>

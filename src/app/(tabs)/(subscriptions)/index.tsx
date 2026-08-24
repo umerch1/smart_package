@@ -6,12 +6,24 @@ import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { getApiErrorMessage } from "@/services/authApi";
-import { useGetSubscriptionsQuery } from "@/services/subscriptionApi";
+import { useDeleteSubscriptionMutation, useGetSubscriptionsQuery } from "@/services/subscriptionApi";
 
 export default function SubscriptionsScreen() {
   const router = useRouter();
   const { data, isLoading, isError, error, refetch } = useGetSubscriptionsQuery();
+  const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
   const subscriptions = data?.data.subscriptions ?? [];
+  const confirmDelete = (id: string) => Alert.alert("Delete subscription", "Are you sure you want to delete this subscription?", [
+    { text: "Cancel", style: "cancel" },
+    { text: "Delete", style: "destructive", onPress: async () => {
+      try {
+        await deleteSubscription(id).unwrap();
+        Alert.alert("Success", "Subscription deleted successfully.");
+      } catch {
+        Alert.alert("Error", "Unable to delete subscription.");
+      }
+    } },
+  ]);
   return (
     <ThemedView style={styles.page}>
       <SafeAreaView style={styles.safe}>
@@ -59,13 +71,16 @@ export default function SubscriptionsScreen() {
                   renewalDate={subscription.renewalDate}
                   expiryDate={subscription.expiryDate}
                   status={subscription.status}
+                  onPress={() =>
+                    router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id: subscription._id } })
+                  }
                   onEdit={() =>
                     router.push({
                       pathname: "/(tabs)/(subscriptions)/edit",
                       params: { id: subscription._id },
                     })
                   }
-                  onDelete={() => Alert.alert("Delete subscription", "Delete is not available in this view yet.")}
+                  onDelete={() => confirmDelete(subscription._id)}
                 />
               ))
             )}
