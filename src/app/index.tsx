@@ -26,7 +26,7 @@ export default function SplashScreen() {
           source={require("../../assets/images/icon6.png")}
           style={styles.logo}
         />
-        <ThemedText style={styles.brand}>SmartSub</ThemedText>
+        <ThemedText style={styles.brand}>Smart Package</ThemedText>
         <ThemedText themeColor="textSecondary" style={styles.tagline}>
           Keep every subscription in sight.
         </ThemedText>
