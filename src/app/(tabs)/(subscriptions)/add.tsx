@@ -2,11 +2,12 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { addSubscription } from "@/components/SubscriptionCard";
 import { CustomButton } from "@/components/CustomButton";
 import { InputField } from "@/components/InputField";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { getApiErrorMessage } from "@/services/authApi";
+import { useAddSubscriptionMutation } from "@/services/subscriptionApi";
 
 export default function AddSubscriptionScreen() {
   const router = useRouter();
@@ -15,13 +16,23 @@ export default function AddSubscriptionScreen() {
   const [cost, setCost] = useState("");
   const [renewalDate, setRenewalDate] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
-  const save = () => {
+  const [addSubscription, { isLoading, isError, error }] = useAddSubscriptionMutation();
+  const save = async () => {
     if (!name || !category || !cost || !renewalDate || !expiryDate) {
       Alert.alert("Missing details", "Please complete every field.");
       return;
     }
-    addSubscription({ name, category, cost, renewalDate, expiryDate });
-    router.replace("/(tabs)/(subscriptions)");
+    const price = Number(cost);
+    if (!Number.isFinite(price)) {
+      Alert.alert("Invalid price", "Enter a valid price.");
+      return;
+    }
+    try {
+      await addSubscription({ packageName: name.trim(), category, price, renewalDate, expiryDate }).unwrap();
+      Alert.alert("Success", "Subscription added successfully.", [{ text: "OK", onPress: () => router.replace("/(tabs)/(subscriptions)") }]);
+    } catch {
+      // The API error is shown below the form.
+    }
   };
   return (
     <ThemedView style={styles.page}>
@@ -62,7 +73,8 @@ export default function AddSubscriptionScreen() {
             onChangeText={setExpiryDate}
             placeholder="YYYY-MM-DD"
           />
-          <CustomButton label="Save subscription" onPress={save} />
+          {isError && <ThemedText style={styles.error}>{getApiErrorMessage(error, "Unable to add subscription.")}</ThemedText>}
+          <CustomButton label={isLoading ? "Saving..." : "Save subscription"} onPress={() => void save()} />
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -81,4 +93,5 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 28, fontWeight: "800", color: "#102F55" },
   intro: { lineHeight: 22, marginBottom: 4 },
+  error: { color: "#B42318" },
 });

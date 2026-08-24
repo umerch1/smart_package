@@ -13,24 +13,7 @@ export type Subscription = {
   expiryDate: string;
 };
 
-let subscriptions: Subscription[] = [
-  {
-    id: "netflix",
-    name: "Netflix",
-    category: "Entertainment",
-    cost: "15.49",
-    renewalDate: "2026-08-22",
-    expiryDate: "2027-08-22",
-  },
-  {
-    id: "spotify",
-    name: "Spotify",
-    category: "Music",
-    cost: "11.99",
-    renewalDate: "2026-08-31",
-    expiryDate: "2027-08-31",
-  },
-];
+let subscriptions: Subscription[] = [];
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
@@ -72,7 +55,7 @@ export function getSubscriptionStatus(
   return "Active";
 }
 function formatDate(value: string) {
-  const date = new Date(`${value}T00:00:00`);
+  const date = new Date(value.includes("T") ? value : `${value}T00:00:00`);
   return Number.isNaN(date.getTime())
     ? value
     : date.toLocaleDateString(undefined, {
@@ -91,6 +74,7 @@ type SubscriptionCardProps = {
   status?: SubscriptionStatus;
   onEdit?: () => void;
   onDelete?: () => void;
+  onPress?: () => void;
   plan?: string;
   price?: string;
   renewal?: string;
@@ -105,6 +89,7 @@ export function SubscriptionCard({
   status,
   onEdit,
   onDelete,
+  onPress,
   plan,
   price,
   renewal,
@@ -112,7 +97,7 @@ export function SubscriptionCard({
 }: SubscriptionCardProps) {
   const isDetailed = category !== undefined;
   return (
-    <View style={styles.card}>
+    <Pressable disabled={!onPress} onPress={onPress} style={styles.card}>
       <View style={[styles.icon, { backgroundColor: accent }]}>
         <ThemedText style={styles.iconText}>{name.charAt(0)}</ThemedText>
       </View>
@@ -168,7 +153,7 @@ export function SubscriptionCard({
           </View>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 }
 const styles = StyleSheet.create({

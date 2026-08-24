@@ -61,7 +61,12 @@ function AuthGate() {
   }, [dispatch, profile.data]);
 
   useEffect(() => {
-    if (!profile.isError || !token || profile.error?.status !== 401) return;
+    const isUnauthorized =
+      typeof profile.error === "object" &&
+      profile.error !== null &&
+      "status" in profile.error &&
+      profile.error.status === 401;
+    if (!profile.isError || !token || !isUnauthorized) return;
     AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
     dispatch(clearCredentials());
     dispatch(api.util.resetApiState());
@@ -70,7 +75,7 @@ function AuthGate() {
   useEffect(() => {
     if (!isHydrated || profile.isLoading || profile.isFetching) return;
     const isAuthRoute = segments[0] === "(auth)";
-    const isRootRoute = segments.length === 0;
+    const isRootRoute = segments[0] === undefined;
     if (isAuthenticated && (isAuthRoute || isRootRoute))
       router.replace("/(tabs)");
     else if (!isAuthenticated && !isAuthRoute) router.replace("/(auth)/login");

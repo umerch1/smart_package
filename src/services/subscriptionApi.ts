@@ -8,6 +8,17 @@ export type ApiSubscription = {
   renewalDate: string;
   expiryDate?: string;
   status: "Active" | "Upcoming" | "Expired";
+  usagePattern?: string;
+};
+
+export type SubscriptionInput = {
+  packageName: string;
+  category: string;
+  price: number;
+  renewalDate: string;
+  expiryDate?: string;
+  usagePattern?: string;
+  status?: ApiSubscription["status"];
 };
 
 type SubscriptionsResponse = {
@@ -16,29 +27,42 @@ type SubscriptionsResponse = {
   data: { subscriptions: ApiSubscription[] };
 };
 
+type SubscriptionResponse = {
+  success: boolean;
+  message: string;
+  data: { subscription: ApiSubscription };
+};
+
 export const subscriptionApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    createSubscription: builder.mutation<ApiSubscription, Partial<ApiSubscription>>({
+    addSubscription: builder.mutation<SubscriptionResponse, SubscriptionInput>({
       query: (body) => ({ url: "/subscriptions", method: "POST", body }),
       invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
     }),
-    updateSubscription: builder.mutation<ApiSubscription, { id: string; body: Partial<ApiSubscription> }>({
+    getSubscriptionById: builder.query<SubscriptionResponse, string>({
+      query: (id) => `/subscriptions/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Subscriptions", id }],
+    }),
+    updateSubscription: builder.mutation<SubscriptionResponse, { id: string; body: SubscriptionInput }>({
       query: ({ id, body }) => ({ url: `/subscriptions/${id}`, method: "PUT", body }),
       invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
     }),
-    deleteSubscription: builder.mutation<ApiSubscription, string>({
+    deleteSubscription: builder.mutation<SubscriptionResponse, string>({
       query: (id) => ({ url: `/subscriptions/${id}`, method: "DELETE" }),
       invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
     }),
     getSubscriptions: builder.query<SubscriptionsResponse, void>({
       query: () => "/subscriptions",
-      providesTags: ["Subscriptions"],
+      providesTags: (result) => result
+        ? ["Subscriptions", ...result.data.subscriptions.map(({ _id }) => ({ type: "Subscriptions" as const, id: _id }))]
+        : ["Subscriptions"],
     }),
   }),
 });
 
 export const {
-  useCreateSubscriptionMutation,
+  useAddSubscriptionMutation,
+  useGetSubscriptionByIdQuery,
   useUpdateSubscriptionMutation,
   useDeleteSubscriptionMutation,
   useGetSubscriptionsQuery,

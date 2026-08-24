@@ -1,50 +1,58 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CustomButton } from "@/components/CustomButton";
 import { InputField } from "@/components/InputField";
-import {
-  Subscription,
-  updateSubscription,
-  useSubscriptions,
-} from "@/components/SubscriptionCard";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { getApiErrorMessage } from "@/services/authApi";
+import { useGetSubscriptionByIdQuery, useUpdateSubscriptionMutation } from "@/services/subscriptionApi";
 
 export default function EditSubscriptionScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const subscriptions = useSubscriptions();
-  const subscription = subscriptions.find((item) => item.id === id);
-  const [form, setForm] = useState<Omit<Subscription, "id">>({
-    name: "",
+  const details = useGetSubscriptionByIdQuery(id ?? "", { skip: !id });
+  const subscription = details.data?.data.subscription;
+  const [updateSubscription, { isLoading: isSaving, isError, error }] = useUpdateSubscriptionMutation();
+  const [form, setForm] = useState({
+    packageName: "",
     category: "",
-    cost: "",
+    price: "",
     renewalDate: "",
     expiryDate: "",
   });
   useEffect(() => {
     if (subscription) {
-      const { id: _id, ...values } = subscription;
-      setForm(values);
+      setForm({ packageName: subscription.packageName, category: subscription.category, price: String(subscription.price), renewalDate: subscription.renewalDate.slice(0, 10), expiryDate: subscription.expiryDate?.slice(0, 10) ?? "" });
     }
   }, [subscription]);
   const setField = (field: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
-  const save = () => {
+  const save = async () => {
     if (!subscription || Object.values(form).some((value) => !value)) {
       Alert.alert("Missing details", "Please complete every field.");
       return;
     }
-    updateSubscription(subscription.id, form);
-    router.replace("/(tabs)/(subscriptions)");
+    const price = Number(form.price);
+    if (!Number.isFinite(price)) {
+      Alert.alert("Invalid price", "Enter a valid price.");
+      return;
+    }
+    try {
+      await updateSubscription({ id: subscription._id, body: { packageName: form.packageName.trim(), category: form.category, price, renewalDate: form.renewalDate, expiryDate: form.expiryDate, status: subscription.status } }).unwrap();
+      Alert.alert("Success", "Subscription updated successfully.", [{ text: "OK", onPress: () => router.replace("/(tabs)/(subscriptions)") }]);
+    } catch {
+      // The API error is displayed below the form.
+    }
   };
-  if (!subscription)
+  if (details.isLoading)
+    return <ThemedView style={styles.page}><SafeAreaView style={styles.safe}><ActivityIndicator size="large" color="#10A889" /></SafeAreaView></ThemedView>;
+  if (details.isError || !subscription)
     return (
       <ThemedView style={styles.page}>
         <SafeAreaView style={styles.safe}>
-          <ThemedText style={styles.title}>Subscription not found</ThemedText>
+          <ThemedText style={styles.title}>{getApiErrorMessage(details.error, "Subscription not found")}</ThemedText>
         </SafeAreaView>
       </ThemedView>
     );
@@ -55,8 +63,8 @@ export default function EditSubscriptionScreen() {
           <ThemedText style={styles.title}>Edit subscription</ThemedText>
           <InputField
             label="Subscription Name"
-            value={form.name}
-            onChangeText={(value) => setField("name", value)}
+            value={form.packageName}
+            onChangeText={(value) => setField("packageName", value)}
           />
           <InputField
             label="Category"
@@ -65,8 +73,8 @@ export default function EditSubscriptionScreen() {
           />
           <InputField
             label="Cost"
-            value={form.cost}
-            onChangeText={(value) => setField("cost", value)}
+            value={form.price}
+            onChangeText={(value) => setField("price", value)}
             keyboardType="decimal-pad"
           />
           <InputField
@@ -81,7 +89,8 @@ export default function EditSubscriptionScreen() {
             onChangeText={(value) => setField("expiryDate", value)}
             placeholder="YYYY-MM-DD"
           />
-          <CustomButton label="Save changes" onPress={save} />
+          {isError && <ThemedText style={styles.error}>{getApiErrorMessage(error, "Unable to update subscription.")}</ThemedText>}
+          <CustomButton label={isSaving ? "Saving..." : "Save changes"} onPress={() => void save()} />
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -99,4 +108,5 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   title: { fontSize: 28, fontWeight: "800", color: "#102F55" },
+  error: { color: "#B42318" },
 });
