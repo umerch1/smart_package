@@ -14,13 +14,40 @@ import { CustomButton } from "@/components/CustomButton";
 import { InputField } from "@/components/InputField";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  getApiErrorMessage,
+  useRegisterUserMutation,
+} from "@/services/authApi";
+import { setCredentials, TOKEN_STORAGE_KEY } from "@/store/authSlice";
+import { useDispatch } from "react-redux";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const [registerUser, { isLoading, isError, error }] =
+    useRegisterUserMutation();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleRegister = async () => {
+    if (password !== confirmPassword) return;
+
+    try {
+      const response = await registerUser({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+      }).unwrap();
+      await AsyncStorage.setItem(TOKEN_STORAGE_KEY, response.data.token);
+      dispatch(setCredentials(response.data));
+      router.replace("/(tabs)");
+    } catch {
+      // RTK Query state displays the error below.
+    }
+  };
   return (
     <ThemedView style={styles.page}>
       <SafeAreaView style={styles.safe}>
@@ -70,9 +97,22 @@ export default function RegisterScreen() {
                 secureTextEntry
               />
               <CustomButton
-                label="Create account"
-                onPress={() => router.replace("/(tabs)")}
+                label={isLoading ? "Creating account..." : "Create account"}
+                onPress={handleRegister}
               />
+              {password !== confirmPassword && confirmPassword.length > 0 && (
+                <ThemedText style={styles.error}>
+                  Passwords do not match.
+                </ThemedText>
+              )}
+              {isError && (
+                <ThemedText style={styles.error}>
+                  {getApiErrorMessage(
+                    error,
+                    "Unable to create your account. Please try again.",
+                  )}
+                </ThemedText>
+              )}
             </View>
             <View style={styles.footer}>
               <ThemedText themeColor="textSecondary">
@@ -111,4 +151,5 @@ const styles = StyleSheet.create({
   form: { gap: 16 },
   footer: { flexDirection: "row", justifyContent: "center", marginTop: 24 },
   link: { color: "#10A889", fontWeight: "700" },
+  error: { color: "#B42318", fontSize: 14 },
 });

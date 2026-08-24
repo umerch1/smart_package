@@ -1,38 +1,21 @@
 import { Link, useRouter } from "expo-router";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CustomButton } from "@/components/CustomButton";
-import { ReminderPrompt } from "@/components/ReminderPrompt";
-import {
-  getSubscriptionStatus,
-  removeSubscription,
-  SubscriptionCard,
-  useSubscriptions,
-} from "@/components/SubscriptionCard";
+import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { getApiErrorMessage } from "@/services/authApi";
+import { useGetSubscriptionsQuery } from "@/services/subscriptionApi";
 
 export default function SubscriptionsScreen() {
   const router = useRouter();
-  const subscriptions = useSubscriptions();
-  const confirmDelete = (id: string) =>
-    Alert.alert(
-      "Delete subscription",
-      "Are you sure you want to delete this subscription?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => removeSubscription(id),
-        },
-      ],
-    );
+  const { data, isLoading, isError, error, refetch } = useGetSubscriptionsQuery();
+  const subscriptions = data?.data.subscriptions ?? [];
   return (
     <ThemedView style={styles.page}>
       <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.content}>
-          <ReminderPrompt />
           <View style={styles.header}>
             <View>
               <ThemedText themeColor="textSecondary" style={styles.eyebrow}>
@@ -52,7 +35,12 @@ export default function SubscriptionsScreen() {
             <CustomButton label="Add subscription" onPress={() => undefined} />
           </Link>
           <View style={styles.cards}>
-            {subscriptions.length === 0 ? (
+            {isLoading ? <ActivityIndicator size="large" color="#10A889" /> : isError ? (
+              <View style={styles.empty}>
+                <ThemedText style={styles.emptyTitle}>{getApiErrorMessage(error, "Unable to load subscriptions.")}</ThemedText>
+                <CustomButton label="Try again" variant="outline" onPress={() => void refetch()} />
+              </View>
+            ) : subscriptions.length === 0 ? (
               <View style={styles.empty}>
                 <ThemedText style={styles.emptyTitle}>
                   No subscriptions yet
@@ -64,16 +52,20 @@ export default function SubscriptionsScreen() {
             ) : (
               subscriptions.map((subscription) => (
                 <SubscriptionCard
-                  key={subscription.id}
-                  {...subscription}
-                  status={getSubscriptionStatus(subscription)}
+                  key={subscription._id}
+                  name={subscription.packageName}
+                  category={subscription.category}
+                  cost={String(subscription.price)}
+                  renewalDate={subscription.renewalDate}
+                  expiryDate={subscription.expiryDate}
+                  status={subscription.status}
                   onEdit={() =>
                     router.push({
                       pathname: "/(tabs)/(subscriptions)/edit",
-                      params: { id: subscription.id },
+                      params: { id: subscription._id },
                     })
                   }
-                  onDelete={() => confirmDelete(subscription.id)}
+                  onDelete={() => Alert.alert("Delete subscription", "Delete is not available in this view yet.")}
                 />
               ))
             )}
