@@ -4,7 +4,9 @@ export const TOKEN_STORAGE_KEY = "smart_package_auth_token";
 
 export type AuthUser = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
   email: string;
 };
 

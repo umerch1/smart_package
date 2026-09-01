@@ -4,9 +4,12 @@ export type ApiSubscription = {
   _id: string;
   packageName: string;
   category: string;
-  price: number;
+  startDate: string;
   renewalDate: string;
   expiryDate?: string;
+  amount?: number;
+  price?: number;
+  notes?: string;
   status: "Active" | "Upcoming" | "Expired";
   usagePattern?: string;
 };
@@ -14,9 +17,12 @@ export type ApiSubscription = {
 export type SubscriptionInput = {
   packageName: string;
   category: string;
-  price: number;
+  startDate: string;
   renewalDate: string;
   expiryDate?: string;
+  amount?: number;
+  price?: number;
+  notes?: string;
   usagePattern?: string;
   status?: ApiSubscription["status"];
 };

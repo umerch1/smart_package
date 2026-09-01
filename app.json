@@ -34,7 +34,8 @@
           "image": "./assets/images/icon6.png",
           "imageWidth": 170
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
