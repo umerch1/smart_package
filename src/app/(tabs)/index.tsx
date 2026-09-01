@@ -144,12 +144,6 @@ export default function DashboardScreen() {
                   <ThemedText style={styles.emptyTitle}>
                     No subscriptions yet
                   </ThemedText>
-                  <Link href="/(tabs)/(subscriptions)/add" asChild>
-                    <CustomButton
-                      label="Add subscription"
-                      onPress={() => undefined}
-                    />
-                  </Link>
                 </View>
               ) : (
                 <View style={styles.cards}>

@@ -75,14 +75,14 @@ export default function SubscriptionsScreen() {
                   onDelete={confirmDelete}
                 />
                 <SubscriptionSection
-                  title="Upcoming packages"
+                  title="Upcoming renewals"
                   subscriptions={groupedSubscriptions.Upcoming}
                   onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
                   onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
                   onDelete={confirmDelete}
                 />
                 <SubscriptionSection
-                  title="Expired packages"
+                  title="Expired subscriptions"
                   subscriptions={groupedSubscriptions.Expired}
                   onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
                   onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
