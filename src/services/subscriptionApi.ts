@@ -10,7 +10,7 @@ export type ApiSubscription = {
   amount?: number;
   price?: number;
   notes?: string;
-  status: "Active" | "Upcoming" | "Expired";
+  status: "Active" | "Upcoming" | "Expired" | "Inactive";
   usagePattern?: string;
 };
 
@@ -57,6 +57,14 @@ export const subscriptionApi = api.injectEndpoints({
       query: (id) => ({ url: `/subscriptions/${id}`, method: "DELETE" }),
       invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
     }),
+    deactivateSubscription: builder.mutation<SubscriptionResponse, string>({
+      query: (id) => ({ url: `/subscriptions/${id}/deactivate`, method: "PUT" }),
+      invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
+    }),
+    reactivateSubscription: builder.mutation<SubscriptionResponse, string>({
+      query: (id) => ({ url: `/subscriptions/${id}/reactivate`, method: "PUT" }),
+      invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
+    }),
     getSubscriptions: builder.query<SubscriptionsResponse, void>({
       query: () => "/subscriptions",
       providesTags: (result) => result
@@ -71,5 +79,7 @@ export const {
   useGetSubscriptionByIdQuery,
   useUpdateSubscriptionMutation,
   useDeleteSubscriptionMutation,
+  useDeactivateSubscriptionMutation,
+  useReactivateSubscriptionMutation,
   useGetSubscriptionsQuery,
 } = subscriptionApi;

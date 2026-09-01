@@ -23,24 +23,32 @@ export default function EditSubscriptionScreen() {
     category: "",
     startDate: "",
     renewalDate: "",
+    expiryDate: "",
     amount: "",
     notes: "",
   });
+  const [customCategory, setCustomCategory] = useState("");
   const [startDateValue, setStartDateValue] = useState<Date>(today);
   const [renewalDateValue, setRenewalDateValue] = useState<Date>(today);
+  const [expiryDateValue, setExpiryDateValue] = useState<Date | undefined>();
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [showRenewalCalendar, setShowRenewalCalendar] = useState(false);
+  const [showExpiryCalendar, setShowExpiryCalendar] = useState(false);
   useEffect(() => {
     if (subscription) {
-      setForm({ packageName: subscription.packageName, category: subscription.category, startDate: subscription.startDate?.slice(0, 10) ?? formatDate(today), renewalDate: subscription.renewalDate.slice(0, 10), amount: subscription.amount !== undefined ? String(subscription.amount) : subscription.price !== undefined ? String(subscription.price) : "", notes: subscription.notes ?? "" });
+      const predefinedCategories = ["Entertainment", "Bills", "Health", "Education", "Finance", "Utilities", "Mobile Package", "Other"];
+      setForm({ packageName: subscription.packageName, category: predefinedCategories.includes(subscription.category) ? subscription.category : "__custom__", startDate: subscription.startDate?.slice(0, 10) ?? formatDate(today), renewalDate: subscription.renewalDate.slice(0, 10), expiryDate: subscription.expiryDate?.slice(0, 10) ?? "", amount: subscription.amount !== undefined ? String(subscription.amount) : subscription.price !== undefined ? String(subscription.price) : "", notes: subscription.notes ?? "" });
+      setCustomCategory(predefinedCategories.includes(subscription.category) ? "" : subscription.category);
       setStartDateValue(parseDate(subscription.startDate) ?? today);
       setRenewalDateValue(parseDate(subscription.renewalDate) ?? today);
+      setExpiryDateValue(parseDate(subscription.expiryDate));
     }
   }, [subscription]);
   const setField = (field: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
   const save = async () => {
-    if (!subscription || !form.packageName.trim() || !form.category.trim() || !form.startDate || !form.renewalDate) {
+    const selectedCategory = form.category === "__custom__" ? customCategory.trim() : form.category.trim();
+    if (!subscription || !form.packageName.trim() || !selectedCategory || !form.startDate || !form.renewalDate) {
       Alert.alert("Missing details", "Please complete the required fields.");
       return;
     }
@@ -50,7 +58,7 @@ export default function EditSubscriptionScreen() {
       return;
     }
     try {
-      await updateSubscription({ id: subscription._id, body: { packageName: form.packageName.trim(), category: form.category.trim(), startDate: form.startDate, renewalDate: form.renewalDate, ...(amount !== undefined ? { amount } : {}), ...(form.notes.trim() ? { notes: form.notes.trim() } : {}), status: subscription.status } }).unwrap();
+      await updateSubscription({ id: subscription._id, body: { packageName: form.packageName.trim(), category: selectedCategory, startDate: form.startDate, renewalDate: form.renewalDate, ...(form.expiryDate ? { expiryDate: form.expiryDate } : {}), ...(amount !== undefined ? { amount } : {}), ...(form.notes.trim() ? { notes: form.notes.trim() } : {}), status: subscription.status } }).unwrap();
       Alert.alert("Success", "Subscription updated successfully.", [{ text: "OK", onPress: () => router.replace("/(tabs)/(subscriptions)") }]);
     } catch {
       // The API error is displayed below the form.
@@ -82,9 +90,10 @@ export default function EditSubscriptionScreen() {
           <View style={styles.pickerContainer}>
             <Picker selectedValue={form.category} onValueChange={(value) => setField("category", value)}>
               <Picker.Item label="Select a category" value="" />
-              <Picker.Item label="Entertainment" value="Entertainment" /><Picker.Item label="Bills" value="Bills" /><Picker.Item label="Health" value="Health" /><Picker.Item label="Education" value="Education" /><Picker.Item label="Finance" value="Finance" /><Picker.Item label="Mobile Package" value="Mobile Package" /><Picker.Item label="Other" value="Other" />
+                <Picker.Item label="Entertainment" value="Entertainment" /><Picker.Item label="Bills" value="Bills" /><Picker.Item label="Health" value="Health" /><Picker.Item label="Education" value="Education" /><Picker.Item label="Finance" value="Finance" /><Picker.Item label="Utilities" value="Utilities" /><Picker.Item label="Mobile Package" value="Mobile Package" /><Picker.Item label="Other" value="Other" /><Picker.Item label="Custom category" value="__custom__" />
             </Picker>
           </View>
+          {form.category === "__custom__" && <InputField label="Custom Category" value={customCategory} onChangeText={setCustomCategory} placeholder="e.g. Travel" />}
           <InputField
             label="Amount (optional)"
             value={form.amount}
@@ -93,6 +102,7 @@ export default function EditSubscriptionScreen() {
           />
           <DateField label="Start Date" value={startDateValue} minimumDate={today} displayValue={form.startDate} visible={showStartCalendar} onPress={() => setShowStartCalendar((visible) => !visible)} onChange={(event, date) => { setShowStartCalendar(false); if (event.type === "set" && date) { setStartDateValue(date); setField("startDate", formatDate(date)); } }} />
           <DateField label="Renewal Date" value={renewalDateValue} minimumDate={today} displayValue={form.renewalDate} visible={showRenewalCalendar} onPress={() => setShowRenewalCalendar((visible) => !visible)} onChange={(event, date) => { setShowRenewalCalendar(false); if (event.type === "set" && date) { setRenewalDateValue(date); setField("renewalDate", formatDate(date)); } }} />
+          <DateField label="Expiry Date (optional)" value={expiryDateValue} minimumDate={renewalDateValue} displayValue={form.expiryDate} visible={showExpiryCalendar} onPress={() => setShowExpiryCalendar((visible) => !visible)} onChange={(event, date) => { setShowExpiryCalendar(false); if (event.type === "set" && date) { setExpiryDateValue(date); setField("expiryDate", formatDate(date)); } }} />
           <InputField
             label="Notes (optional)"
             value={form.notes}
@@ -111,8 +121,8 @@ export default function EditSubscriptionScreen() {
 function formatDate(date: Date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
 function getToday() { const today = new Date(); today.setHours(0, 0, 0, 0); return today; }
 function parseDate(value?: string) { if (!value) return undefined; const date = new Date(value); return Number.isNaN(date.getTime()) ? undefined : date; }
-function DateField({ label, value, minimumDate, displayValue, visible, onPress, onChange }: { label: string; value: Date; minimumDate: Date; displayValue: string; visible: boolean; onPress: () => void; onChange: (event: DateTimePickerEvent, date?: Date) => void; }) {
-  const pickerValue = value < minimumDate ? minimumDate : value;
+function DateField({ label, value, minimumDate, displayValue, visible, onPress, onChange }: { label: string; value?: Date; minimumDate: Date; displayValue: string; visible: boolean; onPress: () => void; onChange: (event: DateTimePickerEvent, date?: Date) => void; }) {
+  const pickerValue = !value || value < minimumDate ? minimumDate : value;
   return <View style={styles.dateField}><ThemedText style={styles.label}>{label}</ThemedText><Pressable style={styles.dateButton} onPress={onPress}><ThemedText style={displayValue ? styles.dateValue : styles.datePlaceholder}>{displayValue || "Choose date"}</ThemedText></Pressable>{visible && <DateTimePicker value={pickerValue} minimumDate={minimumDate} mode="date" display="default" onChange={onChange} />}</View>;
 }
 
