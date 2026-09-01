@@ -16,8 +16,8 @@ export default function AddSubscriptionScreen() {
   const today = getToday();
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
-  const [startDate, setStartDate] = useState(() => formatDate(today));
-  const [renewalDate, setRenewalDate] = useState();
+  const [startDate, setStartDate] = useState<string>(() => formatDate(today));
+  const [renewalDate, setRenewalDate] = useState<string>(() => formatDate(today));
   const [startDateValue, setStartDateValue] = useState(() => today);
   const [renewalDateValue, setRenewalDateValue] = useState(() => today);
   const [showStartCalendar, setShowStartCalendar] = useState(false);
@@ -53,6 +53,14 @@ export default function AddSubscriptionScreen() {
         ...(parsedAmount !== undefined ? { amount: parsedAmount } : {}),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
       }).unwrap();
+      setName("");
+      setCategory("");
+      setStartDate(formatDate(today));
+      setRenewalDate(formatDate(today));
+      setStartDateValue(today);
+      setRenewalDateValue(today);
+      setAmount("");
+      setNotes("");
       Alert.alert("Success", "Subscription added successfully.", [{ text: "OK", onPress: () => router.replace("/(tabs)/(subscriptions)") }]);
     } catch {
       // The API error is shown below the form.
