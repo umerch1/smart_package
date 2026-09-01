@@ -6,17 +6,20 @@ import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { getApiErrorMessage } from "@/services/authApi";
-import { useDeleteSubscriptionMutation, useGetSubscriptionsQuery } from "@/services/subscriptionApi";
+import { type ApiSubscription, useDeactivateSubscriptionMutation, useReactivateSubscriptionMutation, useDeleteSubscriptionMutation, useGetSubscriptionsQuery } from "@/services/subscriptionApi";
 
 export default function SubscriptionsScreen() {
   const router = useRouter();
   const { data, isLoading, isError, error, refetch } = useGetSubscriptionsQuery();
-  const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
-  const subscriptions = data?.data.subscriptions ?? [];
+  const [deleteSubscription] = useDeleteSubscriptionMutation();
+  const [deactivateSubscription] = useDeactivateSubscriptionMutation();
+  const [reactivateSubscription] = useReactivateSubscriptionMutation();
+  const subscriptions: ApiSubscription[] = data?.data.subscriptions ?? [];
   const groupedSubscriptions = {
-    Active: subscriptions.filter((subscription) => subscription.status === "Active"),
-    Upcoming: subscriptions.filter((subscription) => subscription.status === "Upcoming"),
-    Expired: subscriptions.filter((subscription) => subscription.status === "Expired"),
+    Active: subscriptions.filter((subscription: ApiSubscription) => subscription.status === "Active"),
+    Upcoming: subscriptions.filter((subscription: ApiSubscription) => subscription.status === "Upcoming"),
+    Expired: subscriptions.filter((subscription: ApiSubscription) => subscription.status === "Expired"),
+    Inactive: subscriptions.filter((subscription: ApiSubscription) => subscription.status === "Inactive"),
   };
   const confirmDelete = (id: string) => Alert.alert("Delete subscription", "Are you sure you want to delete this subscription?", [
     { text: "Cancel", style: "cancel" },
@@ -27,6 +30,18 @@ export default function SubscriptionsScreen() {
       } catch {
         Alert.alert("Error", "Unable to delete subscription.");
       }
+    } },
+  ]);
+  const confirmDeactivate = (id: string) => Alert.alert("Mark inactive", "Keep this subscription in your records but stop treating it as active?", [
+    { text: "Cancel", style: "cancel" },
+    { text: "Mark inactive", onPress: async () => {
+      try { await deactivateSubscription(id).unwrap(); } catch { Alert.alert("Error", "Unable to mark subscription inactive."); }
+    } },
+  ]);
+  const confirmReactivate = (id: string) => Alert.alert("Reactivate subscription", "Restore this subscription using its current dates?", [
+    { text: "Cancel", style: "cancel" },
+    { text: "Reactivate", onPress: async () => {
+      try { await reactivateSubscription(id).unwrap(); } catch { Alert.alert("Error", "Unable to reactivate subscription."); }
     } },
   ]);
   return (
@@ -73,6 +88,8 @@ export default function SubscriptionsScreen() {
                   onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
                   onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
                   onDelete={confirmDelete}
+                  onDeactivate={confirmDeactivate}
+                  onReactivate={confirmReactivate}
                 />
                 <SubscriptionSection
                   title="Upcoming renewals"
@@ -80,6 +97,8 @@ export default function SubscriptionsScreen() {
                   onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
                   onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
                   onDelete={confirmDelete}
+                  onDeactivate={confirmDeactivate}
+                  onReactivate={confirmReactivate}
                 />
                 <SubscriptionSection
                   title="Expired subscriptions"
@@ -87,6 +106,17 @@ export default function SubscriptionsScreen() {
                   onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
                   onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
                   onDelete={confirmDelete}
+                  onDeactivate={confirmDeactivate}
+                  onReactivate={confirmReactivate}
+                />
+                <SubscriptionSection
+                  title="Inactive subscriptions"
+                  subscriptions={groupedSubscriptions.Inactive}
+                  onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
+                  onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
+                  onDelete={confirmDelete}
+                  onDeactivate={confirmDeactivate}
+                  onReactivate={confirmReactivate}
                 />
               </View>
             )}
@@ -102,12 +132,16 @@ function SubscriptionSection({
   onPress,
   onEdit,
   onDelete,
+  onDeactivate,
+  onReactivate,
 }: {
   title: string;
-  subscriptions: ReturnType<typeof useGetSubscriptionsQuery>["data"]["data"]["subscriptions"];
+  subscriptions: ApiSubscription[];
   onPress: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onDeactivate: (id: string) => void;
+  onReactivate: (id: string) => void;
 }) {
   return (
     <View style={styles.section}>
@@ -119,7 +153,7 @@ function SubscriptionSection({
         <ThemedText themeColor="textSecondary" style={styles.sectionEmpty}>None</ThemedText>
       ) : (
         <View style={styles.cards}>
-          {subscriptions.map((subscription) => (
+          {subscriptions.map((subscription: ApiSubscription) => (
             <SubscriptionCard
               key={subscription._id}
               name={subscription.packageName}
@@ -131,6 +165,8 @@ function SubscriptionSection({
               onPress={() => onPress(subscription._id)}
               onEdit={() => onEdit(subscription._id)}
               onDelete={() => onDelete(subscription._id)}
+              onDeactivate={() => onDeactivate(subscription._id)}
+              onReactivate={() => onReactivate(subscription._id)}
             />
           ))}
         </View>

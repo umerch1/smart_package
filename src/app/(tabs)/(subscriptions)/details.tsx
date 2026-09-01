@@ -6,7 +6,7 @@ import { CustomButton } from "@/components/CustomButton";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { getApiErrorMessage } from "@/services/authApi";
-import { useDeleteSubscriptionMutation, useGetSubscriptionByIdQuery } from "@/services/subscriptionApi";
+import { useDeactivateSubscriptionMutation, useDeleteSubscriptionMutation, useGetSubscriptionByIdQuery, useReactivateSubscriptionMutation } from "@/services/subscriptionApi";
 
 function displayDate(value?: string) {
   if (!value) return "Not provided";
@@ -19,6 +19,8 @@ export default function SubscriptionDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const details = useGetSubscriptionByIdQuery(id ?? "", { skip: !id });
   const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
+  const [deactivateSubscription, { isLoading: isDeactivating }] = useDeactivateSubscriptionMutation();
+  const [reactivateSubscription, { isLoading: isReactivating }] = useReactivateSubscriptionMutation();
   const subscription = details.data?.data.subscription;
 
   const remove = () => Alert.alert("Delete subscription", "Are you sure you want to delete this subscription?", [
@@ -32,6 +34,18 @@ export default function SubscriptionDetailsScreen() {
       }
     } },
   ]);
+  const deactivate = () => Alert.alert("Mark inactive", "Keep this subscription for record keeping?", [
+    { text: "Cancel", style: "cancel" },
+    { text: "Mark inactive", onPress: async () => {
+      try { await deactivateSubscription(id ?? "").unwrap(); router.replace("/(tabs)/(subscriptions)"); } catch { Alert.alert("Error", "Unable to mark subscription inactive."); }
+    } },
+  ]);
+  const reactivate = () => Alert.alert("Reactivate subscription", "Restore this subscription using its current dates?", [
+    { text: "Cancel", style: "cancel" },
+    { text: "Reactivate", onPress: async () => {
+      try { await reactivateSubscription(id ?? "").unwrap(); router.replace("/(tabs)/(subscriptions)"); } catch { Alert.alert("Error", "Unable to reactivate subscription."); }
+    } },
+  ]);
 
   return <ThemedView style={styles.page}><SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.content}>
     <Link href="/(tabs)/(subscriptions)" asChild><CustomButton label="Back to subscriptions" variant="outline" onPress={() => undefined} /></Link>
@@ -40,6 +54,8 @@ export default function SubscriptionDetailsScreen() {
       <View style={styles.card}><Detail label="Category" value={subscription.category} /><Detail label="Start Date" value={displayDate(subscription.startDate)} /><Detail label="Amount" value={subscription.amount !== undefined ? `$${subscription.amount}` : subscription.price !== undefined ? `$${subscription.price}` : "Not provided"} /><Detail label="Renewal Date" value={displayDate(subscription.renewalDate)} /><Detail label="Expiry Date" value={displayDate(subscription.expiryDate)} /><Detail label="Notes" value={subscription.notes || "Not provided"} /><Detail label="Usage Pattern" value={subscription.usagePattern || "Not provided"} /><Detail label="Status" value={subscription.status} /></View>
       <Link href={{ pathname: "/(tabs)/(subscriptions)/edit", params: { id: subscription._id } }} asChild><CustomButton label="Edit" onPress={() => undefined} /></Link>
       <CustomButton label={isDeleting ? "Deleting..." : "Delete"} variant="outline" onPress={remove} />
+      {subscription.status !== "Inactive" && <CustomButton label={isDeactivating ? "Marking inactive..." : "Mark inactive"} variant="outline" onPress={deactivate} />}
+      {subscription.status === "Inactive" && <CustomButton label={isReactivating ? "Reactivating..." : "Reactivate"} onPress={reactivate} />}
     </> : <ThemedText style={styles.title}>Subscription not found</ThemedText>}
   </ScrollView></SafeAreaView></ThemedView>;
 }
