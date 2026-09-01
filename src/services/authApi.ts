@@ -14,7 +14,7 @@ type ProfileResponse = {
 };
 
 type Credentials = { email: string; password: string };
-type Registration = Credentials & { name: string };
+type Registration = Credentials & { firstName: string; lastName: string; gender: string };
 
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({

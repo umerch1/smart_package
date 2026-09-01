@@ -13,6 +13,11 @@ export default function SubscriptionsScreen() {
   const { data, isLoading, isError, error, refetch } = useGetSubscriptionsQuery();
   const [deleteSubscription, { isLoading: isDeleting }] = useDeleteSubscriptionMutation();
   const subscriptions = data?.data.subscriptions ?? [];
+  const groupedSubscriptions = {
+    Active: subscriptions.filter((subscription) => subscription.status === "Active"),
+    Upcoming: subscriptions.filter((subscription) => subscription.status === "Upcoming"),
+    Expired: subscriptions.filter((subscription) => subscription.status === "Expired"),
+  };
   const confirmDelete = (id: string) => Alert.alert("Delete subscription", "Are you sure you want to delete this subscription?", [
     { text: "Cancel", style: "cancel" },
     { text: "Delete", style: "destructive", onPress: async () => {
@@ -46,8 +51,7 @@ export default function SubscriptionsScreen() {
           <Link href="/(tabs)/(subscriptions)/add" asChild>
             <CustomButton label="Add subscription" onPress={() => undefined} />
           </Link>
-          <View style={styles.cards}>
-            {isLoading ? <ActivityIndicator size="large" color="#10A889" /> : isError ? (
+          {isLoading ? <ActivityIndicator size="large" color="#10A889" /> : isError ? (
               <View style={styles.empty}>
                 <ThemedText style={styles.emptyTitle}>{getApiErrorMessage(error, "Unable to load subscriptions.")}</ThemedText>
                 <CustomButton label="Try again" variant="outline" onPress={() => void refetch()} />
@@ -62,34 +66,79 @@ export default function SubscriptionsScreen() {
                 </ThemedText>
               </View>
             ) : (
-              subscriptions.map((subscription) => (
-                <SubscriptionCard
-                  key={subscription._id}
-                  name={subscription.packageName}
-                  category={subscription.category}
-                  cost={String(subscription.price)}
-                  renewalDate={subscription.renewalDate}
-                  expiryDate={subscription.expiryDate}
-                  status={subscription.status}
-                  onPress={() =>
-                    router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id: subscription._id } })
-                  }
-                  onEdit={() =>
-                    router.push({
-                      pathname: "/(tabs)/(subscriptions)/edit",
-                      params: { id: subscription._id },
-                    })
-                  }
-                  onDelete={() => confirmDelete(subscription._id)}
+              <View style={styles.sections}>
+                <SubscriptionSection
+                  title="Active subscriptions"
+                  subscriptions={groupedSubscriptions.Active}
+                  onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
+                  onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
+                  onDelete={confirmDelete}
                 />
-              ))
+                <SubscriptionSection
+                  title="Upcoming packages"
+                  subscriptions={groupedSubscriptions.Upcoming}
+                  onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
+                  onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
+                  onDelete={confirmDelete}
+                />
+                <SubscriptionSection
+                  title="Expired packages"
+                  subscriptions={groupedSubscriptions.Expired}
+                  onPress={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/details" as never, params: { id } })}
+                  onEdit={(id) => router.push({ pathname: "/(tabs)/(subscriptions)/edit", params: { id } })}
+                  onDelete={confirmDelete}
+                />
+              </View>
             )}
-          </View>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
 }
+
+function SubscriptionSection({
+  title,
+  subscriptions,
+  onPress,
+  onEdit,
+  onDelete,
+}: {
+  title: string;
+  subscriptions: ReturnType<typeof useGetSubscriptionsQuery>["data"]["data"]["subscriptions"];
+  onPress: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
+        <ThemedText themeColor="textSecondary" style={styles.count}>{subscriptions.length}</ThemedText>
+      </View>
+      {subscriptions.length === 0 ? (
+        <ThemedText themeColor="textSecondary" style={styles.sectionEmpty}>None</ThemedText>
+      ) : (
+        <View style={styles.cards}>
+          {subscriptions.map((subscription) => (
+            <SubscriptionCard
+              key={subscription._id}
+              name={subscription.packageName}
+              category={subscription.category}
+              cost={subscription.amount !== undefined ? String(subscription.amount) : subscription.price !== undefined ? String(subscription.price) : undefined}
+              startDate={subscription.startDate}
+              renewalDate={subscription.renewalDate}
+              status={subscription.status}
+              onPress={() => onPress(subscription._id)}
+              onEdit={() => onEdit(subscription._id)}
+              onDelete={() => onDelete(subscription._id)}
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#F7FAFE" },
   safe: { flex: 1 },
@@ -108,6 +157,12 @@ const styles = StyleSheet.create({
   },
   eyebrow: { fontSize: 11, letterSpacing: 1, fontWeight: "700" },
   title: { fontSize: 28, fontWeight: "800", color: "#102F55", marginTop: 5 },
+  sections: { gap: 26 },
+  section: { gap: 12 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  sectionTitle: { fontSize: 19, fontWeight: "800", color: "#102F55" },
+  count: { fontSize: 14, fontWeight: "700" },
+  sectionEmpty: { paddingVertical: 8 },
   cards: { gap: 12 },
   empty: {
     backgroundColor: "#FFFFFF",

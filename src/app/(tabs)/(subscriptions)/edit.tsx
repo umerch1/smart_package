@@ -18,29 +18,31 @@ export default function EditSubscriptionScreen() {
   const [form, setForm] = useState({
     packageName: "",
     category: "",
-    price: "",
+    startDate: "",
     renewalDate: "",
     expiryDate: "",
+    amount: "",
+    notes: "",
   });
   useEffect(() => {
     if (subscription) {
-      setForm({ packageName: subscription.packageName, category: subscription.category, price: String(subscription.price), renewalDate: subscription.renewalDate.slice(0, 10), expiryDate: subscription.expiryDate?.slice(0, 10) ?? "" });
+      setForm({ packageName: subscription.packageName, category: subscription.category, startDate: subscription.startDate?.slice(0, 10) ?? "", renewalDate: subscription.renewalDate.slice(0, 10), expiryDate: subscription.expiryDate?.slice(0, 10) ?? "", amount: subscription.amount !== undefined ? String(subscription.amount) : subscription.price !== undefined ? String(subscription.price) : "", notes: subscription.notes ?? "" });
     }
   }, [subscription]);
   const setField = (field: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
   const save = async () => {
-    if (!subscription || Object.values(form).some((value) => !value)) {
-      Alert.alert("Missing details", "Please complete every field.");
+    if (!subscription || !form.packageName.trim() || !form.category.trim() || !form.startDate || !form.renewalDate) {
+      Alert.alert("Missing details", "Please complete the required fields.");
       return;
     }
-    const price = Number(form.price);
-    if (!Number.isFinite(price)) {
-      Alert.alert("Invalid price", "Enter a valid price.");
+    const amount = form.amount.trim() ? Number(form.amount) : undefined;
+    if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) {
+      Alert.alert("Invalid amount", "Enter a valid non-negative amount.");
       return;
     }
     try {
-      await updateSubscription({ id: subscription._id, body: { packageName: form.packageName.trim(), category: form.category, price, renewalDate: form.renewalDate, expiryDate: form.expiryDate, status: subscription.status } }).unwrap();
+      await updateSubscription({ id: subscription._id, body: { packageName: form.packageName.trim(), category: form.category.trim(), startDate: form.startDate, renewalDate: form.renewalDate, ...(form.expiryDate ? { expiryDate: form.expiryDate } : {}), ...(amount !== undefined ? { amount } : {}), ...(form.notes.trim() ? { notes: form.notes.trim() } : {}), status: subscription.status } }).unwrap();
       Alert.alert("Success", "Subscription updated successfully.", [{ text: "OK", onPress: () => router.replace("/(tabs)/(subscriptions)") }]);
     } catch {
       // The API error is displayed below the form.
@@ -72,10 +74,16 @@ export default function EditSubscriptionScreen() {
             onChangeText={(value) => setField("category", value)}
           />
           <InputField
-            label="Cost"
-            value={form.price}
-            onChangeText={(value) => setField("price", value)}
+            label="Amount (optional)"
+            value={form.amount}
+            onChangeText={(value) => setField("amount", value)}
             keyboardType="decimal-pad"
+          />
+          <InputField
+            label="Start Date"
+            value={form.startDate}
+            onChangeText={(value) => setField("startDate", value)}
+            placeholder="YYYY-MM-DD"
           />
           <InputField
             label="Renewal Date"
@@ -84,10 +92,17 @@ export default function EditSubscriptionScreen() {
             placeholder="YYYY-MM-DD"
           />
           <InputField
-            label="Expiry Date"
+            label="Expiry Date (optional)"
             value={form.expiryDate}
             onChangeText={(value) => setField("expiryDate", value)}
             placeholder="YYYY-MM-DD"
+          />
+          <InputField
+            label="Notes (optional)"
+            value={form.notes}
+            onChangeText={(value) => setField("notes", value)}
+            placeholder="Additional information"
+            multiline
           />
           {isError && <ThemedText style={styles.error}>{getApiErrorMessage(error, "Unable to update subscription.")}</ThemedText>}
           <CustomButton label={isSaving ? "Saving..." : "Save changes"} onPress={() => void save()} />

@@ -37,10 +37,11 @@ export default function DashboardScreen() {
     profile.isLoading || dashboard.isLoading || subscriptions.isLoading;
   const hasError =
     profile.isError || dashboard.isError || subscriptions.isError;
-  const userName = profile.data?.data.name;
+  const user = profile.data?.data;
+  const userName = user ? `${user.firstName} ${user.lastName}` : undefined;
   const stats = dashboard.data?.data;
   const activeSubscriptions =
-    subscriptions.data?.data.subscriptions.filter(
+    subscriptions.data?.data?.subscriptions.filter(
       (item) => item.status === "Active",
     ) ?? [];
   const retry = () => {
@@ -157,13 +158,9 @@ export default function DashboardScreen() {
                       key={item._id}
                       name={item.packageName}
                       category={item.category}
-                      cost={String(item.price)}
+                      cost={item.amount !== undefined ? String(item.amount) : item.price !== undefined ? String(item.price) : undefined}
+                      startDate={item.startDate}
                       renewalDate={formatDate(item.renewalDate)}
-                      expiryDate={
-                        item.expiryDate
-                          ? formatDate(item.expiryDate)
-                          : undefined
-                      }
                       status={item.status}
                     />
                   ))}

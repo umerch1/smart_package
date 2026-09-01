@@ -7,6 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  Pressable,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -26,8 +28,29 @@ export default function LoginScreen() {
   const [loginUser, { isLoading, isError, error }] = useLoginUserMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    if (!email.trim()) {
+      errors.push("Email is required");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errors.push("Please provide a valid email address");
+    }
+
+    if (!password) {
+      errors.push("Password is required");
+    }
+
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
 
   const handleLogin = async () => {
+    if (!validateForm()) return;
+
     try {
       const response = await loginUser({
         email: email.trim(),
@@ -70,13 +93,36 @@ export default function LoginScreen() {
                 placeholder="you@example.com"
                 keyboardType="email-address"
               />
-              <InputField
-                label="Password"
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter your password"
-                secureTextEntry
-              />
+              <View>
+                <ThemedText style={styles.label}>Password</ThemedText>
+                <View style={styles.passwordFieldContainer}>
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#5C7187"
+                    secureTextEntry={!showPassword}
+                    style={styles.passwordInput}
+                  />
+                  <Pressable
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.eyeIcon}
+                  >
+                    <ThemedText style={styles.eyeIconText}>
+                      {showPassword ? "👁️" : "👁️‍🗨️"}
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              </View>
+              {validationErrors.length > 0 && (
+                <View style={styles.errorsContainer}>
+                  {validationErrors.map((error, index) => (
+                    <ThemedText key={index} style={styles.error}>
+                      • {error}
+                    </ThemedText>
+                  ))}
+                </View>
+              )}
               <CustomButton
                 label={isLoading ? "Logging in..." : "Log in"}
                 onPress={handleLogin}
@@ -126,6 +172,36 @@ const styles = StyleSheet.create({
   title: { fontSize: 32, fontWeight: "800", color: "#102F55" },
   subtitle: { marginTop: 8, marginBottom: 32, fontSize: 16 },
   form: { gap: 18 },
+  label: { fontSize: 16, fontWeight: "600", marginBottom: 8, color: "#102F55" },
+  passwordFieldContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D7E5F0",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    height: 52,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 15,
+    color: "#102F55",
+    fontSize: 16,
+  },
+  eyeIcon: {
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  eyeIconText: {
+    fontSize: 18,
+  },
+  errorsContainer: {
+    backgroundColor: "#FEE4E2",
+    borderRadius: 8,
+    padding: 12,
+    gap: 6,
+  },
   footer: { flexDirection: "row", justifyContent: "center", marginTop: 28 },
   link: { color: "#10A889", fontWeight: "700" },
   error: { color: "#B42318", fontSize: 14 },
