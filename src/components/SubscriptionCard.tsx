@@ -69,8 +69,8 @@ type SubscriptionCardProps = {
   name: string;
   category?: string;
   cost?: string;
+  startDate?: string;
   renewalDate?: string;
-  expiryDate?: string;
   status?: SubscriptionStatus;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -84,8 +84,8 @@ export function SubscriptionCard({
   name,
   category,
   cost,
+  startDate,
   renewalDate,
-  expiryDate,
   status,
   onEdit,
   onDelete,
@@ -96,6 +96,7 @@ export function SubscriptionCard({
   accent = "#10A889",
 }: SubscriptionCardProps) {
   const isDetailed = category !== undefined;
+  const statusLabel = status?.toUpperCase();
   return (
     <Pressable disabled={!onPress} onPress={onPress} style={styles.card}>
       <View style={[styles.icon, { backgroundColor: accent }]}>
@@ -108,12 +109,12 @@ export function SubscriptionCard({
         </ThemedText>
         {isDetailed && (
           <>
-            <ThemedText style={styles.detail}>Cost: ${cost} / month</ThemedText>
+            <ThemedText style={styles.detail}>{cost !== undefined ? `Amount: $${cost}` : "Amount: Not provided"}</ThemedText>
             <ThemedText style={styles.detail}>
-              Renews: {formatDate(renewalDate ?? "")}
+              Package date: {formatDate(startDate ?? "")}
             </ThemedText>
             <ThemedText style={styles.detail}>
-              Expires: {formatDate(expiryDate ?? "")}
+              Renews: {formatDate(renewalDate ?? "")}
             </ThemedText>
           </>
         )}
@@ -133,7 +134,7 @@ export function SubscriptionCard({
               status === "Upcoming" && styles.upcoming,
             ]}
           >
-            {status}
+            {statusLabel}
           </ThemedText>
         )}
         {(onEdit || onDelete) && (

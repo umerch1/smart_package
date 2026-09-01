@@ -1,6 +1,8 @@
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, StyleSheet } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CustomButton } from "@/components/CustomButton";
 import { InputField } from "@/components/InputField";
@@ -11,6 +13,7 @@ import { useGetSubscriptionByIdQuery, useUpdateSubscriptionMutation } from "@/se
 
 export default function EditSubscriptionScreen() {
   const router = useRouter();
+  const today = getToday();
   const { id } = useLocalSearchParams<{ id: string }>();
   const details = useGetSubscriptionByIdQuery(id ?? "", { skip: !id });
   const subscription = details.data?.data.subscription;
@@ -18,29 +21,36 @@ export default function EditSubscriptionScreen() {
   const [form, setForm] = useState({
     packageName: "",
     category: "",
-    price: "",
+    startDate: "",
     renewalDate: "",
-    expiryDate: "",
+    amount: "",
+    notes: "",
   });
+  const [startDateValue, setStartDateValue] = useState<Date>(today);
+  const [renewalDateValue, setRenewalDateValue] = useState<Date>(today);
+  const [showStartCalendar, setShowStartCalendar] = useState(false);
+  const [showRenewalCalendar, setShowRenewalCalendar] = useState(false);
   useEffect(() => {
     if (subscription) {
-      setForm({ packageName: subscription.packageName, category: subscription.category, price: String(subscription.price), renewalDate: subscription.renewalDate.slice(0, 10), expiryDate: subscription.expiryDate?.slice(0, 10) ?? "" });
+      setForm({ packageName: subscription.packageName, category: subscription.category, startDate: subscription.startDate?.slice(0, 10) ?? formatDate(today), renewalDate: subscription.renewalDate.slice(0, 10), amount: subscription.amount !== undefined ? String(subscription.amount) : subscription.price !== undefined ? String(subscription.price) : "", notes: subscription.notes ?? "" });
+      setStartDateValue(parseDate(subscription.startDate) ?? today);
+      setRenewalDateValue(parseDate(subscription.renewalDate) ?? today);
     }
   }, [subscription]);
   const setField = (field: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
   const save = async () => {
-    if (!subscription || Object.values(form).some((value) => !value)) {
-      Alert.alert("Missing details", "Please complete every field.");
+    if (!subscription || !form.packageName.trim() || !form.category.trim() || !form.startDate || !form.renewalDate) {
+      Alert.alert("Missing details", "Please complete the required fields.");
       return;
     }
-    const price = Number(form.price);
-    if (!Number.isFinite(price)) {
-      Alert.alert("Invalid price", "Enter a valid price.");
+    const amount = form.amount.trim() ? Number(form.amount) : undefined;
+    if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) {
+      Alert.alert("Invalid amount", "Enter a valid non-negative amount.");
       return;
     }
     try {
-      await updateSubscription({ id: subscription._id, body: { packageName: form.packageName.trim(), category: form.category, price, renewalDate: form.renewalDate, expiryDate: form.expiryDate, status: subscription.status } }).unwrap();
+      await updateSubscription({ id: subscription._id, body: { packageName: form.packageName.trim(), category: form.category.trim(), startDate: form.startDate, renewalDate: form.renewalDate, ...(amount !== undefined ? { amount } : {}), ...(form.notes.trim() ? { notes: form.notes.trim() } : {}), status: subscription.status } }).unwrap();
       Alert.alert("Success", "Subscription updated successfully.", [{ text: "OK", onPress: () => router.replace("/(tabs)/(subscriptions)") }]);
     } catch {
       // The API error is displayed below the form.
@@ -61,33 +71,34 @@ export default function EditSubscriptionScreen() {
       <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.content}>
           <ThemedText style={styles.title}>Edit subscription</ThemedText>
+          <View style={styles.pickerLabel}><ThemedText style={styles.label}>Subscription Name</ThemedText></View>
+          <View style={styles.pickerContainer}>
+            <Picker selectedValue={form.packageName} onValueChange={(value) => setField("packageName", value)}>
+              <Picker.Item label="Select a subscription" value="" />
+              <Picker.Item label="Netflix" value="Netflix" /><Picker.Item label="Jazz" value="Jazz" /><Picker.Item label="Gym membership" value="Gym membership" /><Picker.Item label="Spotify" value="Spotify" /><Picker.Item label="YouTube Premium" value="YouTube Premium" /><Picker.Item label="Amazon Prime" value="Amazon Prime" /><Picker.Item label="Microsoft 365" value="Microsoft 365" /><Picker.Item label="Other" value="Other" />
+            </Picker>
+          </View>
+          <View style={styles.pickerLabel}><ThemedText style={styles.label}>Category</ThemedText></View>
+          <View style={styles.pickerContainer}>
+            <Picker selectedValue={form.category} onValueChange={(value) => setField("category", value)}>
+              <Picker.Item label="Select a category" value="" />
+              <Picker.Item label="Entertainment" value="Entertainment" /><Picker.Item label="Bills" value="Bills" /><Picker.Item label="Health" value="Health" /><Picker.Item label="Education" value="Education" /><Picker.Item label="Finance" value="Finance" /><Picker.Item label="Mobile Package" value="Mobile Package" /><Picker.Item label="Other" value="Other" />
+            </Picker>
+          </View>
           <InputField
-            label="Subscription Name"
-            value={form.packageName}
-            onChangeText={(value) => setField("packageName", value)}
-          />
-          <InputField
-            label="Category"
-            value={form.category}
-            onChangeText={(value) => setField("category", value)}
-          />
-          <InputField
-            label="Cost"
-            value={form.price}
-            onChangeText={(value) => setField("price", value)}
+            label="Amount (optional)"
+            value={form.amount}
+            onChangeText={(value) => setField("amount", value)}
             keyboardType="decimal-pad"
           />
+          <DateField label="Start Date" value={startDateValue} minimumDate={today} displayValue={form.startDate} visible={showStartCalendar} onPress={() => setShowStartCalendar((visible) => !visible)} onChange={(event, date) => { setShowStartCalendar(false); if (event.type === "set" && date) { setStartDateValue(date); setField("startDate", formatDate(date)); } }} />
+          <DateField label="Renewal Date" value={renewalDateValue} minimumDate={today} displayValue={form.renewalDate} visible={showRenewalCalendar} onPress={() => setShowRenewalCalendar((visible) => !visible)} onChange={(event, date) => { setShowRenewalCalendar(false); if (event.type === "set" && date) { setRenewalDateValue(date); setField("renewalDate", formatDate(date)); } }} />
           <InputField
-            label="Renewal Date"
-            value={form.renewalDate}
-            onChangeText={(value) => setField("renewalDate", value)}
-            placeholder="YYYY-MM-DD"
-          />
-          <InputField
-            label="Expiry Date"
-            value={form.expiryDate}
-            onChangeText={(value) => setField("expiryDate", value)}
-            placeholder="YYYY-MM-DD"
+            label="Notes (optional)"
+            value={form.notes}
+            onChangeText={(value) => setField("notes", value)}
+            placeholder="Additional information"
+            multiline
           />
           {isError && <ThemedText style={styles.error}>{getApiErrorMessage(error, "Unable to update subscription.")}</ThemedText>}
           <CustomButton label={isSaving ? "Saving..." : "Save changes"} onPress={() => void save()} />
@@ -96,6 +107,15 @@ export default function EditSubscriptionScreen() {
     </ThemedView>
   );
 }
+
+function formatDate(date: Date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
+function getToday() { const today = new Date(); today.setHours(0, 0, 0, 0); return today; }
+function parseDate(value?: string) { if (!value) return undefined; const date = new Date(value); return Number.isNaN(date.getTime()) ? undefined : date; }
+function DateField({ label, value, minimumDate, displayValue, visible, onPress, onChange }: { label: string; value: Date; minimumDate: Date; displayValue: string; visible: boolean; onPress: () => void; onChange: (event: DateTimePickerEvent, date?: Date) => void; }) {
+  const pickerValue = value < minimumDate ? minimumDate : value;
+  return <View style={styles.dateField}><ThemedText style={styles.label}>{label}</ThemedText><Pressable style={styles.dateButton} onPress={onPress}><ThemedText style={displayValue ? styles.dateValue : styles.datePlaceholder}>{displayValue || "Choose date"}</ThemedText></Pressable>{visible && <DateTimePicker value={pickerValue} minimumDate={minimumDate} mode="date" display="default" onChange={onChange} />}</View>;
+}
+
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#F7FAFE" },
   safe: { flex: 1 },
@@ -108,5 +128,12 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   title: { fontSize: 28, fontWeight: "800", color: "#102F55" },
+  pickerLabel: { marginBottom: -10 },
+  label: { fontSize: 14, fontWeight: "700", color: "#102F55" },
+  pickerContainer: { height: 52, borderWidth: 1, borderColor: "#D7E5F0", borderRadius: 12, justifyContent: "center", backgroundColor: "#FFFFFF", overflow: "hidden" },
+  dateField: { gap: 8 },
+  dateButton: { height: 52, borderWidth: 1, borderColor: "#D7E5F0", borderRadius: 12, paddingHorizontal: 15, justifyContent: "center", backgroundColor: "#FFFFFF" },
+  dateValue: { color: "#102F55", fontSize: 16 },
+  datePlaceholder: { color: "#5C7187", fontSize: 16 },
   error: { color: "#B42318" },
 });

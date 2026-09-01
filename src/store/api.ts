@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { clearCredentials, TOKEN_STORAGE_KEY } from "./authSlice";
 
 // Change this address to the development machine's LAN IP for a physical device.
-const BACKEND_IP = "192.168.100.4";
+const BACKEND_IP = "192.168.100.3";
 export const API_BASE_URL = `http://${BACKEND_IP}:5000/api`;
 
 const rawBaseQuery = fetchBaseQuery({
