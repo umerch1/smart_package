@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "./themed-text";
 
-export type SubscriptionStatus = "Active" | "Expired" | "Upcoming";
+export type SubscriptionStatus = "Active" | "Expired" | "Upcoming" | "Inactive";
 export type Subscription = {
   id: string;
   name: string;
@@ -74,6 +74,8 @@ type SubscriptionCardProps = {
   status?: SubscriptionStatus;
   onEdit?: () => void;
   onDelete?: () => void;
+  onDeactivate?: () => void;
+  onReactivate?: () => void;
   onPress?: () => void;
   plan?: string;
   price?: string;
@@ -89,6 +91,8 @@ export function SubscriptionCard({
   status,
   onEdit,
   onDelete,
+  onDeactivate,
+  onReactivate,
   onPress,
   plan,
   price,
@@ -132,16 +136,27 @@ export function SubscriptionCard({
               styles.status,
               status === "Expired" && styles.expired,
               status === "Upcoming" && styles.upcoming,
+              status === "Inactive" && styles.inactive,
             ]}
           >
             {statusLabel}
           </ThemedText>
         )}
-        {(onEdit || onDelete) && (
+        {(onEdit || onDeactivate || onReactivate || onDelete) && (
           <View style={styles.actions}>
             {onEdit && (
               <Pressable onPress={onEdit}>
                 <ThemedText style={styles.action}>Edit</ThemedText>
+              </Pressable>
+            )}
+            {onDeactivate && status !== "Inactive" && (
+              <Pressable onPress={onDeactivate}>
+                <ThemedText style={styles.action}>Mark inactive</ThemedText>
+              </Pressable>
+            )}
+            {onReactivate && status === "Inactive" && (
+              <Pressable onPress={onReactivate}>
+                <ThemedText style={styles.action}>Reactivate</ThemedText>
               </Pressable>
             )}
             {onDelete && (
@@ -194,6 +209,7 @@ const styles = StyleSheet.create({
   },
   expired: { color: "#A64B4B", backgroundColor: "#FBEAEA" },
   upcoming: { color: "#946D22", backgroundColor: "#FFF3D6" },
+  inactive: { color: "#667085", backgroundColor: "#EAECF0" },
   actions: { flexDirection: "row", gap: 10 },
   action: { color: "#10A889", fontSize: 12, fontWeight: "800" },
   delete: { color: "#B54D4D" },

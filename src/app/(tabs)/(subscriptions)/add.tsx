@@ -16,17 +16,22 @@ export default function AddSubscriptionScreen() {
   const today = getToday();
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [startDate, setStartDate] = useState<string>(() => formatDate(today));
   const [renewalDate, setRenewalDate] = useState<string>(() => formatDate(today));
+  const [expiryDate, setExpiryDate] = useState("");
   const [startDateValue, setStartDateValue] = useState(() => today);
   const [renewalDateValue, setRenewalDateValue] = useState(() => today);
+  const [expiryDateValue, setExpiryDateValue] = useState<Date>();
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [showRenewalCalendar, setShowRenewalCalendar] = useState(false);
+  const [showExpiryCalendar, setShowExpiryCalendar] = useState(false);
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [addSubscription, { isLoading, isError, error }] = useAddSubscriptionMutation();
   const save = async () => {
-    if (!name.trim() || !category.trim() || !startDate.trim() || !renewalDate.trim()) {
+    const selectedCategory = category === "__custom__" ? customCategory.trim() : category.trim();
+    if (!name.trim() || !selectedCategory || !startDate.trim() || !renewalDate.trim()) {
       Alert.alert("Missing details", "Please complete the required fields.");
       return;
     }
@@ -47,18 +52,22 @@ export default function AddSubscriptionScreen() {
     try {
       await addSubscription({
         packageName: name.trim(),
-        category: category.trim(),
+        category: selectedCategory,
         startDate,
         renewalDate,
+        ...(expiryDate ? { expiryDate } : {}),
         ...(parsedAmount !== undefined ? { amount: parsedAmount } : {}),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
       }).unwrap();
       setName("");
       setCategory("");
+      setCustomCategory("");
       setStartDate(formatDate(today));
       setRenewalDate(formatDate(today));
+      setExpiryDate("");
       setStartDateValue(today);
       setRenewalDateValue(today);
+      setExpiryDateValue(undefined);
       setAmount("");
       setNotes("");
       Alert.alert("Success", "Subscription added successfully.", [{ text: "OK", onPress: () => router.replace("/(tabs)/(subscriptions)") }]);
@@ -97,10 +106,12 @@ export default function AddSubscriptionScreen() {
               <Picker.Item label="Health" value="Health" />
               <Picker.Item label="Education" value="Education" />
               <Picker.Item label="Finance" value="Finance" />
+              <Picker.Item label="Utilities" value="Utilities" />
               <Picker.Item label="Mobile Package" value="Mobile Package" />
               <Picker.Item label="Other" value="Other" />
             </Picker>
           </View>
+          {category === "__custom__" && <InputField label="Custom Category" value={customCategory} onChangeText={setCustomCategory} placeholder="e.g. Travel" />}
           <InputField
             label="Amount (optional)"
             value={amount}
@@ -135,6 +146,21 @@ export default function AddSubscriptionScreen() {
               if (event.type === "set" && date) {
                 setRenewalDateValue(date);
                 setRenewalDate(formatDate(date));
+              }
+            }}
+          />
+          <DateField
+            label="Expiry Date (optional)"
+            value={expiryDateValue}
+            minimumDate={renewalDateValue}
+            displayValue={expiryDate}
+            visible={showExpiryCalendar}
+            onPress={() => setShowExpiryCalendar((visible) => !visible)}
+            onChange={(event, date) => {
+              setShowExpiryCalendar(false);
+              if (event.type === "set" && date) {
+                setExpiryDateValue(date);
+                setExpiryDate(formatDate(date));
               }
             }}
           />
