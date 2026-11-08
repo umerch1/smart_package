@@ -1,6 +1,8 @@
 import { Link } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,12 +11,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CustomButton } from "@/components/CustomButton";
+import { RecommendationCard } from "@/components/RecommendationCard";
 import { SubscriptionCard } from "@/components/SubscriptionCard";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { getApiErrorMessage, useGetProfileQuery } from "@/services/authApi";
 import { useGetDashboardQuery } from "@/services/dashboardApi";
 import { useGetNotificationsQuery } from "@/services/notificationApi";
+import { useGetRecommendationsQuery } from "@/services/recommendationApi";
 import { useGetSubscriptionsQuery } from "@/services/subscriptionApi";
 
 function formatDate(value: string) {
@@ -33,6 +37,10 @@ export default function DashboardScreen() {
   const dashboard = useGetDashboardQuery();
   const subscriptions = useGetSubscriptionsQuery();
   const notifications = useGetNotificationsQuery();
+  const recommendations = useGetRecommendationsQuery();
+  const unreadCount =
+    notifications.data?.data.notifications.filter((item) => !item.isRead)
+      .length ?? 0;
   const isLoading =
     profile.isLoading || dashboard.isLoading || subscriptions.isLoading;
   const hasError =
@@ -49,6 +57,7 @@ export default function DashboardScreen() {
     void dashboard.refetch();
     void subscriptions.refetch();
     void notifications.refetch();
+    void recommendations.refetch();
   };
 
   return (
@@ -71,12 +80,26 @@ export default function DashboardScreen() {
               <Link href="/notifications" asChild>
                 <Pressable
                   accessibilityLabel="Notifications"
+                  accessibilityRole="button"
                   style={styles.notificationButton}
                 >
-                  <ThemedText style={styles.bell}>N</ThemedText>
-                  {notifications.data?.data.notifications.some(
-                    (item) => !item.isRead,
-                  ) && <View style={styles.unread} />}
+                  {Platform.OS === "web" ? (
+                    <ThemedText style={styles.bell}>🔔</ThemedText>
+                  ) : (
+                    <SymbolView
+                      name={{ ios: "bell.fill", android: "notifications" }}
+                      tintColor="#102F55"
+                      size={21}
+                      fallback={<ThemedText style={styles.bell}>🔔</ThemedText>}
+                    />
+                  )}
+                  {unreadCount > 0 && (
+                    <View style={styles.unreadBadge}>
+                      <ThemedText style={styles.unreadCount}>
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </ThemedText>
+                    </View>
+                  )}
                 </Pressable>
               </Link>
               <Link href="/profile" asChild>
@@ -131,6 +154,43 @@ export default function DashboardScreen() {
                   value={stats?.expiredSubscriptions ?? 0}
                 />
               </View>
+              <View style={styles.sectionHeader}>
+                <ThemedText style={styles.sectionTitle}>
+                  Recommendations
+                </ThemedText>
+                <Link href="/(tabs)/recommendations">
+                  <ThemedText style={styles.link}>View all</ThemedText>
+                </Link>
+              </View>
+              {recommendations.isLoading ? (
+                <ActivityIndicator size="small" color="#10A889" />
+              ) : recommendations.isError ? (
+                <View style={styles.message}>
+                  <ThemedText themeColor="textSecondary">
+                    Recommendations are temporarily unavailable.
+                  </ThemedText>
+                  <CustomButton
+                    label="Retry recommendations"
+                    variant="outline"
+                    onPress={() => void recommendations.refetch()}
+                  />
+                </View>
+              ) : recommendations.data?.data.recommendations.length ? (
+                <View style={styles.cards}>
+                  {recommendations.data.data.recommendations
+                    .slice(0, 2)
+                    .map((item) => (
+                      <RecommendationCard
+                        key={item.id}
+                        recommendation={item}
+                      />
+                    ))}
+                </View>
+              ) : (
+                <ThemedText themeColor="textSecondary">
+                  No recommendations need your attention right now.
+                </ThemedText>
+              )}
               <View style={styles.sectionHeader}>
                 <ThemedText style={styles.sectionTitle}>
                   Active subscriptions
@@ -221,15 +281,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   bell: { color: "#102F55", fontWeight: "800" },
-  unread: {
+  unreadBadge: {
     position: "absolute",
-    right: 8,
-    top: 7,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    right: -4,
+    top: -4,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
     backgroundColor: "#D85B5B",
+    borderWidth: 1,
+    borderColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
+  unreadCount: { color: "#FFFFFF", fontSize: 10, fontWeight: "800" },
   avatarSmall: {
     width: 42,
     height: 42,
