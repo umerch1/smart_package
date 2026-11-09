@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react';
-
-import { useSubscriptions } from '@/components/SubscriptionCard';
-import { getRecommendations, type Recommendation } from '@/services/recommendationService';
+import { useGetRecommendationsQuery } from "@/services/recommendationApi";
 
 export function useRecommendations() {
-  const subscriptions = useSubscriptions();
-  const [recommendations, setRecommendations] = useState<Recommendation[]>(() => getRecommendations(subscriptions));
+  const query = useGetRecommendationsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
-  useEffect(() => {
-    setRecommendations(getRecommendations(subscriptions));
-  }, [subscriptions]);
-
-  return { recommendations, refresh: () => setRecommendations(getRecommendations(subscriptions)) };
+  return {
+    ...query,
+    recommendations: query.data?.data.recommendations ?? [],
+  };
 }

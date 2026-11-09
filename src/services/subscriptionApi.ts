@@ -43,7 +43,12 @@ export const subscriptionApi = api.injectEndpoints({
   endpoints: (builder) => ({
     addSubscription: builder.mutation<SubscriptionResponse, SubscriptionInput>({
       query: (body) => ({ url: "/subscriptions", method: "POST", body }),
-      invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
+      invalidatesTags: [
+        "Subscriptions",
+        "Dashboard",
+        "Notifications",
+        "Recommendations",
+      ],
     }),
     getSubscriptionById: builder.query<SubscriptionResponse, string>({
       query: (id) => `/subscriptions/${id}`,
@@ -51,19 +56,39 @@ export const subscriptionApi = api.injectEndpoints({
     }),
     updateSubscription: builder.mutation<SubscriptionResponse, { id: string; body: SubscriptionInput }>({
       query: ({ id, body }) => ({ url: `/subscriptions/${id}`, method: "PUT", body }),
-      invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
+      invalidatesTags: [
+        "Subscriptions",
+        "Dashboard",
+        "Notifications",
+        "Recommendations",
+      ],
     }),
     deleteSubscription: builder.mutation<SubscriptionResponse, string>({
       query: (id) => ({ url: `/subscriptions/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
+      invalidatesTags: [
+        "Subscriptions",
+        "Dashboard",
+        "Notifications",
+        "Recommendations",
+      ],
     }),
     deactivateSubscription: builder.mutation<SubscriptionResponse, string>({
       query: (id) => ({ url: `/subscriptions/${id}/deactivate`, method: "PUT" }),
-      invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
+      invalidatesTags: [
+        "Subscriptions",
+        "Dashboard",
+        "Notifications",
+        "Recommendations",
+      ],
     }),
     reactivateSubscription: builder.mutation<SubscriptionResponse, string>({
       query: (id) => ({ url: `/subscriptions/${id}/reactivate`, method: "PUT" }),
-      invalidatesTags: ["Subscriptions", "Dashboard", "Notifications"],
+      invalidatesTags: [
+        "Subscriptions",
+        "Dashboard",
+        "Notifications",
+        "Recommendations",
+      ],
     }),
     getSubscriptions: builder.query<SubscriptionsResponse, void>({
       query: () => "/subscriptions",
