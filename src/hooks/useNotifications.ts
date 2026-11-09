@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react';
-
-import { getNotifications, type SubscriptionNotification } from '@/services/notificationService';
-import { useSubscriptions } from '@/components/SubscriptionCard';
+import { useGetNotificationsQuery } from "@/services/notificationApi";
 
 export function useNotifications() {
-  const subscriptions = useSubscriptions();
-  const [notifications, setNotifications] = useState<SubscriptionNotification[]>(() => getNotifications(subscriptions));
+  const query = useGetNotificationsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
-  useEffect(() => {
-    setNotifications(getNotifications(subscriptions));
-  }, [subscriptions]);
-
-  return { notifications, refresh: () => setNotifications(getNotifications(subscriptions)) };
+  return {
+    ...query,
+    notifications: query.data?.data.notifications ?? [],
+  };
 }

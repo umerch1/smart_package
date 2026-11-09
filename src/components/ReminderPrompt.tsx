@@ -20,13 +20,9 @@ export function ReminderPrompt() {
         <ThemedText style={styles.iconText}>!</ThemedText>
       </View>
       <View style={styles.copy}>
-        <ThemedText style={styles.title}>
-          Upcoming subscription reminder
-        </ThemedText>
+        <ThemedText style={styles.title}>{notification.title}</ThemedText>
         <ThemedText style={styles.message}>
-          {notification.subscriptionName}{" "}
-          {notification.type === "Subscription Renewal" ? "renews" : "expires"}{" "}
-          on {notification.relevantDate}.
+          {notification.message}
           {extraCount > 0
             ? ` +${extraCount} more reminder${extraCount === 1 ? "" : "s"}.`
             : ""}

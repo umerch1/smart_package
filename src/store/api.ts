@@ -5,8 +5,8 @@ import { clearCredentials, TOKEN_STORAGE_KEY } from "./authSlice";
 
 // Change this address to the development machine's LAN IP for a physical device.
 const BACKEND_IP = "192.168.100.3";
-export const API_BASE_URL = `http://${BACKEND_IP}:5000/api`;
-
+// export const API_BASE_URL = `http://${BACKEND_IP}:5000/api`;
+const API_BASE_URL = `https://smart-package-backend.onrender.com/api`;
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   prepareHeaders: (headers, { getState }) => {
@@ -27,6 +27,12 @@ export const api = createApi({
     }
     return result;
   },
-  tagTypes: ["Dashboard", "Subscriptions", "Notifications", "Profile"],
+  tagTypes: [
+    "Dashboard",
+    "Subscriptions",
+    "Notifications",
+    "Recommendations",
+    "Profile",
+  ],
   endpoints: () => ({}),
 });
